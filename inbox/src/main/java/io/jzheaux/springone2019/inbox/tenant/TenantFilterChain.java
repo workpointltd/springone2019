@@ -4,6 +4,7 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
+import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 import reactor.util.context.Context;
 
@@ -24,6 +25,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
+@Slf4j
 public class TenantFilterChain implements WebFilter, ApplicationContextAware {
 	private final Map<String, Mono<WebFilter>> tenants = new HashMap<>();
 	private final ReactiveClientRegistrationRepository clients;
@@ -66,7 +68,7 @@ public class TenantFilterChain implements WebFilter, ApplicationContextAware {
 			// @formatter:off
 			http
 				.authorizeExchange(e -> e
-					.pathMatchers("/jwks").permitAll()
+					.pathMatchers("/jwks", "/login").permitAll()
 					.anyExchange().authenticated())
 				.logout(l -> l.logoutSuccessHandler(handler))
 				.oauth2Login(withDefaults())

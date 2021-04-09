@@ -3,6 +3,9 @@ package io.jzheaux.springone2019.inbox;
 import io.jzheaux.springone2019.inbox.security.JwtService;
 import io.jzheaux.springone2019.inbox.security.SignedJwtExchangeFilterFunction;
 import io.jzheaux.springone2019.inbox.tenant.TenantFilterChain;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.web.server.ServerAuthenticationEntryPoint;
+import org.springframework.security.web.server.authentication.RedirectServerAuthenticationEntryPoint;
 import reactor.core.publisher.Mono;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +34,7 @@ import static org.springframework.security.web.server.util.matcher.ServerWebExch
 import static org.springframework.security.web.server.util.matcher.ServerWebExchangeMatcher.MatchResult.notMatch;
 
 @SpringBootApplication
+@Slf4j
 public class InboxApplication {
 
 	@Autowired JwtService jwtService;
@@ -40,6 +44,12 @@ public class InboxApplication {
 		return WebClient.builder().filter(jwt).build();
 	}
 
+	/**
+	 * This bean exchanges the authorization_code from the browser for an access_token.
+	 * The 'auth' WebClient above provides a webclient instance that appends the client authentication details
+	 * @param auth
+	 * @return
+	 */
 	@Bean
 	WebClientReactiveAuthorizationCodeTokenResponseClient authorizationCode(WebClient auth) {
 		WebClientReactiveAuthorizationCodeTokenResponseClient authorizationCode =
@@ -80,6 +90,7 @@ public class InboxApplication {
 			.build();
 	}
 
+	@Bean
 	@Order(-101)
 	WebFilter tenant(ReactiveClientRegistrationRepository clients) {
 		return new TenantFilterChain(clients);
@@ -91,7 +102,10 @@ public class InboxApplication {
 		http
 			.securityMatcher(noregistration())
 			.authorizeExchange(e -> e.anyExchange().denyAll())
-			.exceptionHandling(e -> e.authenticationEntryPoint(new HttpStatusServerEntryPoint(HttpStatus.UNAUTHORIZED)));
+			.exceptionHandling(e -> {
+				log.debug("No client registration found!");
+				e.authenticationEntryPoint(new HttpStatusServerEntryPoint(HttpStatus.UNAUTHORIZED));
+			});
 		// @formatter:off
 
 		return http.build();

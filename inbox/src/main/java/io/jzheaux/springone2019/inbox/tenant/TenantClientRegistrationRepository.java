@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Primary;
 import reactor.core.publisher.Mono;
 
 import org.springframework.kafka.annotation.KafkaListener;
@@ -14,13 +16,18 @@ import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.stereotype.Component;
 
 @Component
+@Primary
+@Slf4j
 public class TenantClientRegistrationRepository implements ReactiveClientRegistrationRepository {
 	private final Map<String, String> tenants = new HashMap<>();
 	private final Map<String, Mono<ClientRegistration>> clients = new HashMap<>();
 
 	public TenantClientRegistrationRepository() {
+		this.tenants.put("master", "http://idp:9999/auth/realms/master");
 		this.tenants.put("one", "http://idp:9999/auth/realms/one");
 		this.tenants.put("two", "http://idp:9999/auth/realms/two");
+		this.tenants.put("three", "http://idp:9999/auth/realms/three");
+		this.tenants.put("four", "http://idp:9999/auth/realms/four");
 	}
 
 	@Override
@@ -35,6 +42,7 @@ public class TenantClientRegistrationRepository implements ReactiveClientRegistr
 	}
 
 	private Mono<ClientRegistration> clientRegistration(String uri, String registrationId) {
+		log.debug("Client registration : uri = "+uri+", regId = "+registrationId);
 		return Mono.just(ClientRegistrations.fromIssuerLocation(uri)
 				.registrationId(registrationId)
 				.clientId("message")

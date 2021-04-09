@@ -37,6 +37,8 @@ public class ServiceReactiveOAuth2UserService
 		return this.delegate.loadUser(oidcUserRequest).flatMap(this::create);
 	}
 
+	//Enrich oidc user with additional local info
+	//You may implement this in a gateway
 	private Mono<OidcUser> create(OidcUser oidcUser) {
 		return this.users.findByEmail(oidcUser.getEmail())
 				.map(u -> new CustomOidcUser(u, oidcUser));

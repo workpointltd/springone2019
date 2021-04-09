@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class IndexController {
 	@GetMapping("/")
 	String index() {
+		System.out.println("IndexController index!");
+
 		return "redirect:/messages/inbox";
 	}
 }

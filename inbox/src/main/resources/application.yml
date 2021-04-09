@@ -1,5 +1,9 @@
 logging:
   level:
+    ROOT: INFO
+    web: INFO
+    io.jzheaux.springone2019: TRACE
+    org.springframework.security: TRACE
     reator:
       netty:
         channel: DEBUG
